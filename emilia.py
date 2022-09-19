@@ -3,6 +3,8 @@ import nextcord
 from nextcord.ext.commands import Bot
 from nextcord.activity import Activity, ActivityType
 from nextcord.interactions import Interaction
+from nextcord.embeds import Embed
+from nextcord.colour import Color
 
 print("Initializing Emilia...")
 Emilia = Bot(
@@ -28,8 +30,14 @@ async def write(ctx, *, text: str) -> None:
 
 
 @Emilia.slash_command(description="Tell me what to say...")
-async def say(interaction: Interaction, text: str):
-    await interaction.channel.send(text)
+async def say(interaction: Interaction, text: str, embed: bool):
+    if (embed):
+        embed = Embed(title="And the Radio Says...", description=text, color=Color.red())
+        embed.set_footer(text=interaction.user.nick, icon_url=interaction.user.avatar)
+        await interaction.channel.send(embed=embed)
+    else:
+        await interaction.channel.send(text)
+    await interaction.response.send_message("Message sent", ephemeral=True)
 
 
 Emilia.run(open("token.txt").read())
