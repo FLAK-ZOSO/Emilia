@@ -66,7 +66,8 @@ async def on_message(message: Message) -> None:
                     await message.delete()
                     await author.ban(reason=reason)
             break
-    await Emilia.process_commands(message)
+    else:
+        await Emilia.process_commands(message)
 
 
 @Emilia.command()
