@@ -120,4 +120,16 @@ async def censor(
     await interaction.response.send_message(f"Word {word} added to soviet censor list", ephemeral=True)
 
 
+@Emilia.slash_command(description="Remove a word from the soviet censor list")
+@has_permissions(administrator=True)
+async def uncensor(interaction: Interaction, word: str) -> None:
+    path = f"guilds/{interaction.guild.id}/censor.json"
+    global censor_data
+    censor_data[interaction.guild.id].pop(word)
+    with open(path, "w") as file:
+        json.dump(censor_data[interaction.guild.id], file, indent=4)
+    await interaction.channel.send(embed=Embed(title="Censor", description=f"Removed {word} from censor list", color=Color.red()))
+    await interaction.response.send_message(f"Word {word} removed from soviet censor list", ephemeral=True)
+
+
 Emilia.run(open("token.txt").read())
