@@ -116,8 +116,8 @@ async def censor(
         censor_data[interaction.guild.id][word] = {"reason": reason, "embed": embed, "action": action}
     with open(path, "w") as file:
         json.dump(censor, file, indent=4)
-    await interaction.channel.send(embed=Embed(title="Censor", description=f"Added {word} to censor list", color=Color.red()))
-    await interaction.response.send_message(f"Word {word} added to soviet censor list", ephemeral=True)
+    await interaction.channel.send(embed=Embed(title="Censor", description=f"Added ||{word}|| to censor list", color=Color.red()))
+    await interaction.response.send_message(f"Word ||{word}|| added to soviet censor list", ephemeral=True)
 
 
 @Emilia.slash_command(description="Remove a word from the soviet censor list")
@@ -128,12 +128,12 @@ async def uncensor(interaction: Interaction, word: str) -> None:
     try:
         censor_data[interaction.guild.id].pop(word)
     except KeyError:
-        await interaction.response.send_message(f"Word {word} not found in censor list", ephemeral=True)
+        await interaction.response.send_message(f"Word ||{word}|| not found in censor list", ephemeral=True)
     else:
         with open(path, "w") as file:
             json.dump(censor_data[interaction.guild.id], file, indent=4)
-        await interaction.channel.send(embed=Embed(title="Censor", description=f"Removed {word} from censor list", color=Color.red()))
-        await interaction.response.send_message(f"Word {word} removed from soviet censor list", ephemeral=True)
+        await interaction.channel.send(embed=Embed(title="Censor", description=f"Removed ||{word}|| from censor list", color=Color.red()))
+        await interaction.response.send_message(f"Word ||{word}|| removed from soviet censor list", ephemeral=True)
 
 
 Emilia.run(open("token.txt").read())
