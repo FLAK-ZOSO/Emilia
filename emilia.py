@@ -35,6 +35,40 @@ async def on_ready() -> None:
     print(f"...({Emilia.user.name}#{Emilia.user.discriminator}) online")
 
 
+@Emilia.event
+async def on_message(message: Message) -> None:
+    author = message.author
+    for word, instructions in censor_data[message.guild.id].items():
+        if word in message.content:
+            reason = f"""
+                Word: ||{word}||
+                Reason: {instructions['reason']}
+            """
+            embed_ = Embed(
+                title="Censored", description=reason,
+                color=Color.red(), url="https://github.com/FLAK-ZOSO/Emilia"
+            )
+            match instructions["action"]:
+                case 0:
+                    if (instructions["embed"]):
+                        await message.reply(embed=embed_)
+                    await message.delete()
+                case 1:
+                    if (instructions["embed"]):
+                        await message.reply(embed=embed_)
+                        await author.send(embed=embed_)
+                    await message.delete()
+                    await author.kick(reason=reason)
+                case 2:
+                    if (instructions["embed"]):
+                        await message.reply(embed=embed_)
+                        await author.send(embed=embed_)
+                    await message.delete()
+                    await author.ban(reason=reason)
+            break
+    await Emilia.process_commands(message)
+
+
 @Emilia.command()
 async def write(ctx: Context, *, text: str) -> None:
     await ctx.message.delete()
