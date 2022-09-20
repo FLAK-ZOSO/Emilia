@@ -24,7 +24,7 @@ async def on_ready() -> None:
 
 
 @Emilia.command()
-async def write(ctx, *, text: str) -> None:
+async def write(ctx: Context, *, text: str) -> None:
     await ctx.message.delete()
     await ctx.send(text)
 
