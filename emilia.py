@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
+import json
+import os
 import nextcord
-from nextcord.ext.commands import Bot
+from nextcord.ext.commands import Bot, Context, command, has_permissions
+from nextcord import SlashOption
 from nextcord.activity import Activity, ActivityType
 from nextcord.interactions import Interaction
+from nextcord.message import Message
 from nextcord.embeds import Embed
 from nextcord.colour import Color
 
