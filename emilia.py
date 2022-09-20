@@ -39,7 +39,7 @@ async def on_ready() -> None:
 async def on_message(message: Message) -> None:
     author = message.author
     for word, instructions in censor_data[message.guild.id].items():
-        if word in message.content:
+        if word.lower() in message.content.lower():
             reason = f"""
                 Word: ||{word}||
                 Reason: {instructions['reason']}
