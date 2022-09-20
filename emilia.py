@@ -109,6 +109,10 @@ async def censor(
     with open(path, "r") as file:
         censor: dict = json.load(file)
         censor[word] = {"reason": reason, "embed": embed, "action": action}
+        try:
+            censor_data[interaction.guild.id]
+        except KeyError:
+            censor_data[interaction.guild.id] = {}
         censor_data[interaction.guild.id][word] = {"reason": reason, "embed": embed, "action": action}
     with open(path, "w") as file:
         json.dump(censor, file, indent=4)
