@@ -29,7 +29,7 @@ censor_data: dict[int, dict[str, dict[str, str | bool | int]]] = {}
 async def on_ready() -> None:
     print(f"...loading censor information from guilds directory...")
     global censor_data
-    root, _, _, _ = os.walk("guilds")
+    root, *_ = os.walk("guilds")
     for dir in root[1]:
         censor_data[int(dir)] = json.load(open(f"guilds/{dir}/censor.json"))
     print(f"...({Emilia.user.name}#{Emilia.user.discriminator}) online")
