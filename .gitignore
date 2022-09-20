@@ -125,4 +125,5 @@ dmypy.json
 
 # Others
 .vscode/
+guilds/
 token.txt
