@@ -3,7 +3,7 @@ import json
 import os
 import nextcord
 from nextcord.ext.commands import Bot, Context, command, has_permissions
-from nextcord import SlashOption
+from nextcord import SlashOption, User, Member
 from nextcord.activity import Activity, ActivityType
 from nextcord.interactions import Interaction
 from nextcord.message import Message
@@ -22,7 +22,17 @@ Emilia = Bot(
 )
 
 
-censor_data: dict[int, dict[str, dict[str, str | bool | int]]] = {}
+censor_data: dict[
+    int, dict[
+        str | int, dict[
+            str, str | bool | int
+        ] | dict[
+            str, dict[
+                str, str | bool | int
+            ]
+        ]
+    ]
+] = {}
 
 
 @Emilia.event
@@ -35,36 +45,49 @@ async def on_ready() -> None:
     print(f"...({Emilia.user.name}#{Emilia.user.discriminator}) online")
 
 
+async def act_on_word_found(
+        word: str, instructions: dict[str, str | int | bool], 
+        message: Message, author: Member
+    ):
+    reason = f"""
+        Word: ||{word}||
+        Reason: {instructions['reason']}
+    """
+    embed_ = Embed(
+        title="Censored", description=reason,
+        color=Color.red(), url="https://github.com/FLAK-ZOSO/Emilia"
+    )
+    match instructions["action"]:
+        case 0:
+            if (instructions["embed"]):
+                await message.reply(embed=embed_)
+            await message.delete()
+        case 1:
+            if (instructions["embed"]):
+                await message.reply(embed=embed_)
+                await author.send(embed=embed_)
+            await message.delete()
+            await author.kick(reason=reason)
+        case 2:
+            if (instructions["embed"]):
+                await message.reply(embed=embed_)
+                await author.send(embed=embed_)
+            await message.delete()
+            await author.ban(reason=reason)
+
+
 @Emilia.event
 async def on_message(message: Message) -> None:
     author = message.author
     for word, instructions in censor_data[message.guild.id].items():
+        if (isinstance(word, int)): # Must be a censor_data[guild.id][user.id]
+            for word_, instructions_ in censor_data[message.guild.id][author.id].items():
+                if word_.lower() in message.content.lower():
+                    await act_on_word_found(word_, instructions_, message, author)
+                    break
+            break
         if word.lower() in message.content.lower():
-            reason = f"""
-                Word: ||{word}||
-                Reason: {instructions['reason']}
-            """
-            embed_ = Embed(
-                title="Censored", description=reason,
-                color=Color.red(), url="https://github.com/FLAK-ZOSO/Emilia"
-            )
-            match instructions["action"]:
-                case 0:
-                    if (instructions["embed"]):
-                        await message.reply(embed=embed_)
-                    await message.delete()
-                case 1:
-                    if (instructions["embed"]):
-                        await message.reply(embed=embed_)
-                        await author.send(embed=embed_)
-                    await message.delete()
-                    await author.kick(reason=reason)
-                case 2:
-                    if (instructions["embed"]):
-                        await message.reply(embed=embed_)
-                        await author.send(embed=embed_)
-                    await message.delete()
-                    await author.ban(reason=reason)
+            await act_on_word_found(word, instructions, message, author)
             break
     else:
         await Emilia.process_commands(message)
@@ -134,6 +157,41 @@ async def uncensor(interaction: Interaction, word: str) -> None:
             json.dump(censor_data[interaction.guild.id], file, indent=4)
         await interaction.channel.send(embed=Embed(title="Censor", description=f"Removed ||{word}|| from censor list", color=Color.red()))
         await interaction.response.send_message(f"Word ||{word}|| removed from soviet censor list", ephemeral=True)
+
+
+@Emilia.slash_command(description="Set a censor rule for a certain user")
+async def user_censor(
+        interaction: Interaction, user: User, 
+        word: str, reason: str, embed: bool,
+        action: int = SlashOption(
+            name="action", description="Action to take on word match",
+            choices={"just Delete": 0, "also Kick": 1, "also Ban": 2},
+        )
+    ):
+    path = f"guilds/{interaction.guild.id}/rules.json"
+    if (not os.path.isfile(path)):
+        try:
+            file = open(path, "w")
+        except FileNotFoundError:
+            os.mkdir(f"guilds/{interaction.guild.id}")
+            file = open(path, "w")
+        file.write(r"{}")
+        file.close()
+    with open(path, "r") as file:
+        censor: dict = json.load(file)
+        try:
+            censor_data[interaction.guild.id]
+        except KeyError:
+            censor_data[interaction.guild.id] = {}
+        try:
+            censor_data[interaction.guild.id][user.id]
+        except KeyError:
+            censor_data[interaction.guild.id][user.id] = {}
+        censor_data[interaction.guild.id][user.id][word] = {"reason": reason, "embed": embed, "action": action}
+    with open(path, "w") as file:
+        json.dump(censor_data[interaction.guild.id][user.id], file, indent=4)
+    await interaction.channel.send(embed=Embed(title="Censor", description=f"Added ||{word}|| to censor list for {user.mention}", color=Color.red()))
+    await interaction.response.send_message(f"Word ||{word}|| added to soviet censor list for {user.mention}", ephemeral=True)
 
 
 Emilia.run(open("token.txt").read())
