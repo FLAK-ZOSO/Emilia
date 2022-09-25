@@ -144,7 +144,7 @@ async def censor(
             censor_data[interaction.guild.id]
         except KeyError:
             censor_data[interaction.guild.id] = {}
-        censor_data[interaction.guild.id][word] = {"reason": reason, "embed": embed, "action": action}
+        censor_data[interaction.guild.id][word.lower()] = {"reason": reason, "embed": embed, "action": action}
     with open(path, "w") as file:
         json.dump(censor, file, indent=4)
     await interaction.channel.send(embed=Embed(title="Censor", description=f"Added ||{word}|| to censor list", color=Color.red()))
@@ -157,7 +157,7 @@ async def uncensor(interaction: Interaction, word: str) -> None:
     path = f"guilds/{interaction.guild.id}/censor.json"
     global censor_data
     try:
-        censor_data[interaction.guild.id].pop(word)
+        censor_data[interaction.guild.id].pop(word.lower())
     except KeyError:
         await interaction.response.send_message(f"Word ||{word}|| not found in censor list", ephemeral=True)
     else:
@@ -194,7 +194,7 @@ async def user_censor(
             censor_data[interaction.guild.id][user.id]
         except KeyError:
             censor_data[interaction.guild.id][user.id] = {}
-        censor_data[interaction.guild.id][user.id][word] = {"reason": reason, "embed": embed, "action": action}
+        censor_data[interaction.guild.id][user.id][word.lower()] = {"reason": reason, "embed": embed, "action": action}
     with open(path, "w") as file:
         temp_ = {key: value for key, value in censor_data[interaction.guild.id].items() if isinstance(key, int)}
         json.dump(temp_, file, indent=4)
@@ -207,7 +207,7 @@ async def user_uncensor(interaction: Interaction, user: User, word: str) -> None
     path = f"guilds/{interaction.guild.id}/rules.json"
     global censor_data
     try:
-        censor_data[interaction.guild.id][user.id].pop(word)
+        censor_data[interaction.guild.id][user.id].pop(word.lower())
     except KeyError:
         await interaction.response.send_message(f"Word ||{word}|| not found in censor list for {user.mention}", ephemeral=True)
     else:
