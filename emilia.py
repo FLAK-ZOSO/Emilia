@@ -89,6 +89,8 @@ async def on_message(message: Message) -> None:
     author = message.author
     for word, instructions in censor_data[message.guild.id].items():
         if (isinstance(word, int)): # Must be a censor_data[guild.id][user.id]
+            if (word != author.id):
+                continue
             for word_, instructions_ in censor_data[message.guild.id][author.id].items():
                 if word_.lower() in message.content.lower():
                     await act_on_word_found(word_, instructions_, message, author)
