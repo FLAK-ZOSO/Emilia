@@ -196,9 +196,26 @@ async def user_censor(
             censor_data[interaction.guild.id][user.id] = {}
         censor_data[interaction.guild.id][user.id][word] = {"reason": reason, "embed": embed, "action": action}
     with open(path, "w") as file:
-        json.dump(censor_data[interaction.guild.id][user.id], file, indent=4)
+        temp_ = {key: value for key, value in censor_data[interaction.guild.id].items() if isinstance(key, int)}
+        json.dump(temp_, file, indent=4)
     await interaction.channel.send(embed=Embed(title="Censor", description=f"Added ||{word}|| to censor list for {user.mention}", color=Color.red()))
     await interaction.response.send_message(f"Word ||{word}|| added to soviet censor list for {user.mention}", ephemeral=True)
+
+
+@Emilia.slash_command(description="Remove a censor rule for a certain user")
+async def user_uncensor(interaction: Interaction, user: User, word: str) -> None:
+    path = f"guilds/{interaction.guild.id}/rules.json"
+    global censor_data
+    try:
+        censor_data[interaction.guild.id][user.id].pop(word)
+    except KeyError:
+        await interaction.response.send_message(f"Word ||{word}|| not found in censor list for {user.mention}", ephemeral=True)
+    else:
+        with open(path, "w") as file:
+            temp_ = {key: value for key, value in censor_data[interaction.guild.id].items() if isinstance(key, int)}
+            json.dump(temp_, file, indent=4)
+        await interaction.channel.send(embed=Embed(title="Censor", description=f"Removed ||{word}|| from censor list for {user.mention}", color=Color.red()))
+        await interaction.response.send_message(f"Word ||{word}|| removed from soviet censor list for {user.mention}", ephemeral=True)
 
 
 Emilia.run(open("token.txt").read())
