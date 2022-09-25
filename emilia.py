@@ -41,7 +41,15 @@ async def on_ready() -> None:
     global censor_data
     root, *_ = os.walk("guilds")
     for dir in root[1]:
-        censor_data[int(dir)] = json.load(open(f"guilds/{dir}/censor.json"))
+        try:
+            temp_censor = json.load(open(f"guilds/{dir}/censor.json"))
+        except FileNotFoundError:
+            temp_censor = {}
+        try:
+            temp_rules = json.load(open(f"guilds/{dir}/rules.json"))
+        except FileNotFoundError:
+            temp_rules = {}
+        censor_data[int(dir)] = temp_censor | temp_rules
     print(f"...({Emilia.user.name}#{Emilia.user.discriminator}) online")
 
 
@@ -178,7 +186,6 @@ async def user_censor(
         file.write(r"{}")
         file.close()
     with open(path, "r") as file:
-        censor: dict = json.load(file)
         try:
             censor_data[interaction.guild.id]
         except KeyError:
