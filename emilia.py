@@ -220,4 +220,36 @@ async def user_uncensor(interaction: Interaction, user: User, word: str) -> None
         await interaction.response.send_message(f"Word ||{word}|| removed from soviet censor list for {user.mention}", ephemeral=True)
 
 
+@Emilia.slash_command(description="List all censor rules")
+async def see_censors(interaction: Interaction) -> None:
+    try:
+        censor = censor_data[interaction.guild.id]
+    except KeyError:
+        await interaction.response.send_message("No censor rules found", ephemeral=True)
+        return
+    embed = Embed(title="Censor", description="All censor rules", color=Color.red())
+    for key, value in censor.items():
+        try:
+            int(key) # If key is an int, it's a user
+        except ValueError:    
+            print(value)
+            embed.add_field(name=key, value=f"Reason: {value['reason']}\nAction: {value['action']}\nEmbed: {value['embed']}", inline=False)
+    await interaction.channel.send(embed=embed)
+    await interaction.response.send_message("Censor list sent", ephemeral=True)
+
+
+@Emilia.slash_command(description="List all censor rules for a certain user")
+async def see_user_censors(interaction: Interaction, user: User) -> None:
+    try:
+        censor = censor_data[interaction.guild.id][str(user.id)]
+    except KeyError:
+        await interaction.response.send_message(f"No censor rules found for {user.mention}", ephemeral=True)
+        return
+    embed = Embed(title="Censor", description=f"All censor rules for {user.mention}", color=Color.red())
+    for key, value in censor.items():
+        embed.add_field(name=key, value=f"Reason: {value['reason']}\nAction: {value['action']}\nEmbed: {value['embed']}", inline=False)
+    await interaction.channel.send(embed=embed)
+    await interaction.response.send_message(f"Censor list for {user.mention} sent", ephemeral=True)
+
+
 Emilia.run(open("token.txt").read())
