@@ -9,8 +9,13 @@ from nextcord.interactions import Interaction
 from nextcord.message import Message
 from nextcord.embeds import Embed
 from nextcord.colour import Color
+from nextcord.ext.commands.errors import MissingPermissions
+from nextcord.errors import Forbidden, HTTPException
 
-from utilities import wait_for_event, act_on_word_found
+from utilities import (
+    wait_for_event, act_on_word_found, started_spying, 
+    papocchio_url, stop_spying_string
+)
 
 print("Initializing Emilia...")
 Emilia = Bot(
