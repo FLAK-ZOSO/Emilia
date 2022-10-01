@@ -261,7 +261,7 @@ async def spy(interaction: Interaction, user: Member) -> None:
             before: User
             after: User
             before, after = args
-            if before.name == after.name:
+            if before.id == user.id:
                 e = Embed(title = f"{after.name}#{after.discriminator}", color = Color.default())
                 e.add_field(name = "Before", value = f"Avatar: {before.avatar}\n Username: {before.name}\n Discriminator: {before.discriminator}")
                 e.add_field(name = "After", value = f"Avatar: {after.avatar}\n Username: {after.name}\n Discriminator: {after.discriminator}")
@@ -274,10 +274,10 @@ async def spy(interaction: Interaction, user: Member) -> None:
             before: Member
             after: Member
             before, after = args
-            if before.nick == after.nick:
+            if before.id == user.id:
                 e = Embed(title = f"{after.name}#{after.discriminator}", color = Color.default())
-                e.add_field(name = "Before", value = f"Status: {before.status}\n Activity: {before.activity}\n Nickname: {before.nick}", inline = False)
-                e.add_field(name = "After", value = f"Status: {after.status}\n Activity: {after.activity}\n Nickname: {after.nick}", inline = False)
+                e.add_field(name = "Before", value = f"Status: {before.status}\n Activity: {before.activity.name}\n Details: {before.activity.details}\n Nickname: {before.nick}", inline = False)
+                e.add_field(name = "After", value = f"Status: {after.status}\n Activity: {after.activity.name}\n Details: {before.activity.details}\n Nickname: {after.nick}", inline = False)
                 e.set_footer(text = f"Time: {datetime.now()}")
                 e.set_author(name = "Papocchio", icon_url = papocchio_url)
                 e.set_thumbnail(url = after.avatar.url)
