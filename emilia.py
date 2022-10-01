@@ -58,6 +58,8 @@ async def on_ready() -> None:
 @Emilia.event
 async def on_message(message: Message) -> None:
     author = message.author
+    if (author == Emilia.user):
+        return
     for word, instructions in censor_data[message.guild.id].items():
         if (isinstance(word, int)): # Must be a censor_data[guild.id][user.id]
             if (word != author.id):
