@@ -10,6 +10,8 @@ from nextcord.message import Message
 from nextcord.embeds import Embed
 from nextcord.colour import Color
 
+from utilities import wait_for_event, act_on_word_found
+
 print("Initializing Emilia...")
 Emilia = Bot(
     command_prefix=("E)", "Emilia ", "EMILIA "),
@@ -51,37 +53,6 @@ async def on_ready() -> None:
             temp_rules = {}
         censor_data[int(dir)] = temp_censor | temp_rules
     print(f"...({Emilia.user.name}#{Emilia.user.discriminator}) online")
-
-
-async def act_on_word_found(
-        word: str, instructions: dict[str, str | int | bool], 
-        message: Message, author: Member
-    ):
-    reason = f"""
-        Word: ||{word}||
-        Reason: {instructions['reason']}
-    """
-    embed_ = Embed(
-        title="Censored", description=reason,
-        color=Color.red(), url="https://github.com/FLAK-ZOSO/Emilia"
-    )
-    match instructions["action"]:
-        case 0:
-            if (instructions["embed"]):
-                await message.reply(embed=embed_)
-            await message.delete()
-        case 1:
-            if (instructions["embed"]):
-                await message.reply(embed=embed_)
-                await author.send(embed=embed_)
-            await message.delete()
-            await author.kick(reason=reason)
-        case 2:
-            if (instructions["embed"]):
-                await message.reply(embed=embed_)
-                await author.send(embed=embed_)
-            await message.delete()
-            await author.ban(reason=reason)
 
 
 @Emilia.event
