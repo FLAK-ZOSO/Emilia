@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 import json
 import os
+from asyncio import create_task, Task, wait, FIRST_COMPLETED
+from datetime import datetime
+from types import NoneType
+
 import nextcord
 from nextcord.ext.commands import Bot, Context, command, has_permissions
 from nextcord import SlashOption, User, Member
+from nextcord.abc import GuildChannel, Messageable
 from nextcord.activity import Activity, ActivityType
 from nextcord.interactions import Interaction
 from nextcord.message import Message
@@ -229,6 +234,85 @@ async def see_user_censors(interaction: Interaction, user: User) -> None:
         embed.add_field(name=key, value=f"Reason: {value['reason']}\nAction: {value['action']}\nEmbed: {value['embed']}", inline=False)
     await interaction.channel.send(embed=embed)
     await interaction.response.send_message(f"Censor list for {user.mention} sent", ephemeral=True)
+
+
+@Emilia.slash_command(description="Spy a certain user. [NOTE: This command will die on bot shutdown]")
+async def spy(interaction: Interaction, user: Member) -> None:
+    author = interaction.user
+    await author.send(embed = started_spying(user))
+    await interaction.response.send_message(f"Stop spying on {user.mention} by writing 'Stop spying on {user.name}'", ephemeral=True)
+
+    while True:
+        tasks = [
+            create_task(wait_for_event(Emilia, "presence_update")),
+            create_task(wait_for_event(Emilia, "user_update")),
+            create_task(wait_for_event(Emilia, "message")),
+            create_task(wait_for_event(Emilia, "typing"))
+        ]
+
+        pending: list[Task]
+        done, pending = await wait(tasks, return_when=FIRST_COMPLETED)
+        for task in pending:
+            task.cancel()
+
+        event, *args = list(done)[0].result()
+
+        if event == "user_update":
+            before: User
+            after: User
+            before, after = args
+            if before.name == after.name:
+                e = Embed(title = f"{after.name}#{after.discriminator}", color = Color.default())
+                e.add_field(name = "Before", value = f"Avatar: {before.avatar}\n Username: {before.name}\n Discriminator: {before.discriminator}")
+                e.add_field(name = "After", value = f"Avatar: {after.avatar}\n Username: {after.name}\n Discriminator: {after.discriminator}")
+                e.set_footer(text = f"Time: {datetime.now()}")
+                e.set_author(name = "Papocchio", icon_url = papocchio_url)
+                e.set_thumbnail(url = after.avatar.url)
+                await author.send(embed = e)
+        
+        elif event == "presence_update":
+            before: Member
+            after: Member
+            before, after = args
+            if before.nick == after.nick:
+                e = Embed(title = f"{after.name}#{after.discriminator}", color = Color.default())
+                e.add_field(name = "Before", value = f"Status: {before.status}\n Activity: {before.activity}\n Nickname: {before.nick}", inline = False)
+                e.add_field(name = "After", value = f"Status: {after.status}\n Activity: {after.activity}\n Nickname: {after.nick}", inline = False)
+                e.set_footer(text = f"Time: {datetime.now()}")
+                e.set_author(name = "Papocchio", icon_url = papocchio_url)
+                e.set_thumbnail(url = after.avatar.url)
+                await author.send(embed = e)
+
+        elif event == "typing":
+            channel: Messageable | GuildChannel
+            channel, user, when_ = args
+            if user == user:
+                e = Embed(title = f"{user.name}#{user.discriminator}", description = f"I caught {user.mention} typing in {channel.mention}.", color = Color.default())
+                e.set_footer(text = f"Time: {datetime.now()}")
+                e.set_author(name = "Papocchio", icon_url = papocchio_url)
+                e.set_thumbnail(url = user.avatar.url)
+                await author.send(embed = e)
+
+        elif event == "message":
+            message: Message = args[0]
+            if message.author == user:
+                e = Embed(title = f"{user.name}#{user.discriminator}", description = f"{user.mention} sent a message in {message.channel}.", color = Color.default())
+                e.set_footer(text = f"Time: {datetime.now()}")
+                e.set_author(name = "Papocchio", icon_url = papocchio_url)
+                e.set_thumbnail(url = user.avatar.url)
+                await author.send(embed = e)
+            if message.author == author and stop_spying_string.lower() in message.content.lower():
+                if (user.mention in message.content.lower()) or (user.name.lower() in message.content.lower()):
+                    try:
+                        await message.delete()
+                    except Forbidden | MissingPermissions | HTTPException:
+                        pass # It could have been already deleted by another thread
+                    e = Embed(title = "STOP SPYING", description = f"Stopped spying {user.mention} ({user.name}#{user.discriminator}).")
+                    e.set_footer(text = f"Time: {datetime.now()}")
+                    e.set_author(name = "Papocchio", icon_url = papocchio_url)
+                    e.set_thumbnail(url = user.avatar.url)
+                    await author.send(embed = e)
+                    return
 
 
 Emilia.run(open("token.txt").read())
