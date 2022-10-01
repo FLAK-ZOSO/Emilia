@@ -202,8 +202,7 @@ async def see_censors(interaction: Interaction) -> None:
     for key, value in censor.items():
         try:
             int(key) # If key is an int, it's a user
-        except ValueError:    
-            print(value)
+        except ValueError:
             embed.add_field(name=key, value=f"Reason: {value['reason']}\nAction: {value['action']}\nEmbed: {value['embed']}", inline=False)
     await interaction.channel.send(embed=embed)
     await interaction.response.send_message("Censor list sent", ephemeral=True)
