@@ -72,6 +72,8 @@ async def on_message(message: Message) -> None:
     author = message.author
     if (author == Emilia.user):
         return
+    if (stop_spying_string in message.content):
+        return
     for word, instructions in censor_data[message.guild.id].items():
         if (isinstance(word, int)): # Must be a censor_data[guild.id][user.id]
             if (word != author.id):
@@ -276,8 +278,20 @@ async def spy(interaction: Interaction, user: Member) -> None:
             before, after = args
             if before.id == user.id:
                 e = Embed(title = f"{after.name}#{after.discriminator}", color = Color.default())
-                e.add_field(name = "Before", value = f"Status: {before.status}\n Activity: {before.activity.name}\n Details: {before.activity.details}\n Nickname: {before.nick}", inline = False)
-                e.add_field(name = "After", value = f"Status: {after.status}\n Activity: {after.activity.name}\n Details: {before.activity.details}\n Nickname: {after.nick}", inline = False)
+                try:
+                    before_activity = before.activity.name
+                    before_details = before.activity.details
+                except AttributeError:
+                    before_activity = "None"
+                    before_details = "None"
+                try:
+                    after_activity = after.activity.name
+                    after_details = after.activity.details
+                except AttributeError:
+                    after_activity = "None"
+                    after_details = "None"
+                e.add_field(name = "Before", value = f"Status: {before.status}\n Activity: {before_activity}\n Details: {before_details}\n Nickname: {before.nick}", inline = False)
+                e.add_field(name = "After", value = f"Status: {after.status}\n Activity: {after_activity}\n Details: {after_details}\n Nickname: {after.nick}", inline = False)
                 e.set_footer(text = f"Time: {datetime.now()}")
                 e.set_author(name = "Papocchio", icon_url = papocchio_url)
                 e.set_thumbnail(url = after.avatar.url)
