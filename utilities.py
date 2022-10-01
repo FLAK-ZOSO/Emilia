@@ -16,9 +16,10 @@ async def act_on_word_found(
         word: str, instructions: dict[str, str | int | bool], 
         message: Message, author: Member
     ):
+    reason_ = instructions['reason']
     reason = f"""
         Word: ||{word}||
-        Reason: {instructions['reason']}
+        Reason: {reason_}
     """
     embed_ = Embed(
         title="Censored", description=reason,
