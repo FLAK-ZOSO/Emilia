@@ -62,6 +62,8 @@ async def on_ready() -> None:
 
 @Emilia.event
 async def on_message(message: Message) -> None:
+    if isinstance(message, NoneType):
+        return
     author = message.author
     if (author == Emilia.user):
         return
