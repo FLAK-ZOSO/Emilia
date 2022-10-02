@@ -282,14 +282,12 @@ async def spy(interaction: Interaction, user: Member) -> None:
                     before_activity = before.activity.name
                     before_details = before.activity.details
                 except AttributeError:
-                    before_activity = "None"
-                    before_details = "None"
+                    before_activity = before_details = "None"
                 try:
                     after_activity = after.activity.name
                     after_details = after.activity.details
                 except AttributeError:
-                    after_activity = "None"
-                    after_details = "None"
+                    after_activity = after_details = "None"
                 e.add_field(name = "Before", value = f"Status: {before.status}\n Activity: {before_activity}\n Details: {before_details}\n Nickname: {before.nick}", inline = False)
                 e.add_field(name = "After", value = f"Status: {after.status}\n Activity: {after_activity}\n Details: {after_details}\n Nickname: {after.nick}", inline = False)
                 e.set_footer(text = f"Time: {datetime.now()}")
