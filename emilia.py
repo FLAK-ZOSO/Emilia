@@ -297,8 +297,8 @@ async def spy(interaction: Interaction, user: Member) -> None:
 
         elif event == "typing":
             channel: Messageable | GuildChannel
-            channel, user, when_ = args
-            if user == user:
+            channel, user_typing, when_ = args
+            if user == user_typing:
                 e = Embed(title = f"{user.name}#{user.discriminator}", description = f"I caught {user.mention} typing in {channel.mention}.", color = Color.default())
                 e.set_footer(text = f"Time: {datetime.now()}")
                 e.set_author(name = "Papocchio", icon_url = papocchio_url)
@@ -313,6 +313,7 @@ async def spy(interaction: Interaction, user: Member) -> None:
                 e.set_author(name = "Papocchio", icon_url = papocchio_url)
                 e.set_thumbnail(url = user.avatar.url)
                 await author.send(embed = e)
+
             if message.author == author and stop_spying_string.lower() in message.content.lower():
                 if (user.mention in message.content.lower()) or (user.name.lower() in message.content.lower()):
                     try:
