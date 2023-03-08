@@ -107,6 +107,31 @@ async def say(interaction: Interaction, text: str, embed: bool):
     await interaction.response.send_message("Message sent", ephemeral=True)
 
 
+@Emilia.slash_command(name="delete", description="Delete some of the last N messages in the channel based on content")
+@has_permissions(administrator=True)
+async def delete(
+        interaction: Interaction,
+        number: int = SlashOption(
+            name="number",
+            description="The number of messages from which delete those ones which match the condition",
+            required=True,
+        ),
+        content: str = SlashOption(
+            name="content",
+            description="The content to match",
+            required=True,
+        )) -> None:
+    counter = 0
+    def _check(message: Message) -> bool:
+        nonlocal counter
+        if (content in message.content):
+            counter += 1
+            return True
+        return False
+    await interaction.channel.purge(limit=number + 1, check=_check)
+    await interaction.response.send_message(f"Deleted {counter} messages containing *{content}* from a group of {number}", ephemeral=True)
+
+
 @Emilia.slash_command(description="Add a word to the soviet censor list")
 @has_permissions(administrator=True)
 async def censor(
