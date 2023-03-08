@@ -16,7 +16,14 @@ async def act_on_word_found(
         word: str, instructions: dict[str, str | int | bool], 
         message: Message, author: Member
     ):
-    reason_ = instructions['reason']
+    print(f"{instructions=}")
+    if ("reason" in instructions.keys()):
+        reason_ = instructions["reason"]
+    else:
+        try:
+            reason_ = instructions[word]["reason"]
+        except KeyError:
+            reason_ = "{...}"
     reason = f"""
         Word: ||{word}||
         Reason: {reason_}
@@ -25,19 +32,33 @@ async def act_on_word_found(
         title="Censored", description=reason,
         color=Color.red(), url="https://github.com/FLAK-ZOSO/Emilia"
     )
-    match instructions["action"]:
+    if ("action" in instructions.keys()):
+        action = instructions["action"]
+    else:
+        try:
+            action = instructions[word]["action"]
+        except KeyError:
+            action = 0
+    if ("embed" in instructions.keys()):
+        embed = instructions["embed"]
+    else:
+        try:
+            embed = instructions[word]["embed"]
+        except KeyError:
+            embed = True
+    match action:
         case 0:
-            if (instructions["embed"]):
+            if (embed):
                 await message.reply(embed=embed_)
             await message.delete()
         case 1:
-            if (instructions["embed"]):
+            if (embed):
                 await message.reply(embed=embed_)
                 await author.send(embed=embed_)
             await message.delete()
             await author.kick(reason=reason)
         case 2:
-            if (instructions["embed"]):
+            if (embed):
                 await message.reply(embed=embed_)
                 await author.send(embed=embed_)
             await message.delete()

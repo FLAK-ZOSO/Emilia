@@ -75,10 +75,10 @@ async def on_message(message: Message) -> None:
     if (stop_spying_string in message.content):
         return
     for word, instructions in censor_data[message.guild.id].items():
-        if (isinstance(word, int)): # Must be a censor_data[guild.id][user.id]
-            if (word != author.id):
+        if (isinstance(word, int) or word.isdigit()): # Must be a censor_data[guild.id][str(user.id)]
+            if (word != str(author.id)):
                 continue
-            for word_, instructions_ in censor_data[message.guild.id][author.id].items():
+            for word_, instructions_ in censor_data[message.guild.id][str(author.id)].items():
                 if word_.lower() in message.content.lower():
                     await act_on_word_found(word_, instructions_, message, author)
                     break
@@ -204,13 +204,21 @@ async def user_censor(
             censor_data[interaction.guild.id]
         except KeyError:
             censor_data[interaction.guild.id] = {}
+        print(f"{censor_data[interaction.guild.id]=}")
         try:
-            censor_data[interaction.guild.id][user.id]
+            censor_data[interaction.guild.id][str(user.id)]
         except KeyError:
-            censor_data[interaction.guild.id][user.id] = {}
-        censor_data[interaction.guild.id][user.id][word.lower()] = {"reason": reason, "embed": embed, "action": action}
+            censor_data[interaction.guild.id][str(user.id)] = {}
+        print(f"{censor_data[interaction.guild.id][str(user.id)]=}")
+        censor_data[interaction.guild.id][str(user.id)][word.lower()] = {"reason": reason, "embed": embed, "action": action}
+        print(f"{censor_data[interaction.guild.id][str(user.id)][word.lower()]=}")
     with open(path, "w") as file:
-        temp_ = {key: value for key, value in censor_data[interaction.guild.id].items() if isinstance(key, int)}
+        temp_ = {key: value for key, value in censor_data[interaction.guild.id].items() if key.isdigit()}
+        print("THEN...")
+        print(f"{temp_=}")
+        print(f"{censor_data[interaction.guild.id]=}")
+        print(f"{censor_data[interaction.guild.id][str(user.id)]=}")
+        print(f"{censor_data[interaction.guild.id][str(user.id)][word.lower()]=}")
         json.dump(temp_, file, indent=4)
     await interaction.channel.send(embed=Embed(title="Censor", description=f"Added ||{word}|| to censor list for {user.mention}", color=Color.red()))
     await interaction.response.send_message(f"Word ||{word}|| added to soviet censor list for {user.mention}", ephemeral=True)
@@ -221,7 +229,7 @@ async def user_uncensor(interaction: Interaction, user: User, word: str) -> None
     path = f"guilds/{interaction.guild.id}/rules.json"
     global censor_data
     try:
-        censor_data[interaction.guild.id][user.id].pop(word.lower())
+        censor_data[interaction.guild.id][str(user.id)].pop(word.lower())
     except KeyError:
         await interaction.response.send_message(f"Word ||{word}|| not found in censor list for {user.mention}", ephemeral=True)
     else:
