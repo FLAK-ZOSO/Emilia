@@ -274,6 +274,20 @@ async def see_user_censors(interaction: Interaction, user: User) -> None:
 @Emilia.slash_command(description="Spy a certain user. [NOTE: This command will die on bot shutdown]")
 async def spy(interaction: Interaction, user: Member) -> None:
     author = interaction.user
+    if (user.id == Emilia.user.id):
+        await author.send(embed = Embed(
+            title="You must be an idiot...",
+            description="...I can't spy on myself!",
+            color=Color.dark_theme()
+        ))
+        await interaction.response.send_message(
+            embed=Embed(
+                title="For everyone's information...",
+                description=f"{author.mention} asked me to spy on myself! What an idiot!",
+                color=Color.dark_theme()
+            ), ephemeral=False
+        )
+        return
     await author.send(embed = started_spying(user))
     await interaction.response.send_message(f"Stop spying on {user.mention} by writing 'Stop spying on {user.name}'", ephemeral=True)
 
