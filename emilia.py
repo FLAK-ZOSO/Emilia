@@ -139,9 +139,10 @@ async def censor(
         word: str, reason: str, embed: bool,
         action: int = SlashOption(
             name="action", description="Action to take on word match",
-            choices={"just Delete": 0, "also Kick": 1, "also Ban": 2},
+            choices={"just Delete": 0, "also Kick [must be admin]": 1, "also Ban [must be admin]": 2},
         )
     ):
+    action = action if interaction.user.guild_permissions.administrator else 0
     path = f"guilds/{interaction.guild.id}/censor.json"
     if (not os.path.isfile(path)):
         try:
@@ -187,9 +188,10 @@ async def user_censor(
         word: str, reason: str, embed: bool,
         action: int = SlashOption(
             name="action", description="Action to take on word match",
-            choices={"just Delete": 0, "also Kick": 1, "also Ban": 2},
+            choices={"just Delete": 0, "also Kick [must be admin]": 1, "also Ban [must be admin]": 2},
         )
     ):
+    action = action if interaction.user.guild_permissions.administrator else 0
     path = f"guilds/{interaction.guild.id}/rules.json"
     if (not os.path.isfile(path)):
         try:
