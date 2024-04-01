@@ -398,9 +398,15 @@ async def dump_nicknames(interaction: Interaction) -> None:
     await interaction.channel.send(file=nextcord.File(f"guilds/{interaction.guild.id}/nicknames.json"))
     await interaction.response.send_message("Nicknames dumped", ephemeral=True)
 
+shuffling_nicknames = False
 
 @Emilia.slash_command(name="shuffle_nicknames", description="Shuffle all nicknames in the server", guild_ids=[1033496612355461131, 790997924896833596])
 async def shuffle_nicknames(interaction: Interaction) -> None:
+    if shuffling_nicknames:
+        interaction.response.send_message("Already shuffling...", ephemeral=True)
+        return
+
+    shuffling_nicknames = True
     nicknames = {member.id: member.nick for member in interaction.guild.members}
     for key, value in nicknames.items():
         if value is None:
@@ -416,14 +422,19 @@ async def shuffle_nicknames(interaction: Interaction) -> None:
             await interaction.guild.get_member(key).edit(nick=value)
             print(f"Shuffled nickname for {interaction.guild.get_member(key).name} to {value}")
         except BaseException as e:
+            shuffling_nicknames = False
             print(f"{e=}")
             print(f"Error shuffling nickname for {interaction.guild.get_member(key).name}")
     await interaction.channel.send(embed=Embed(title="Nicknames", description="Nicknames shuffled", color=Color.red()))
     await interaction.response.send_message("Nicknames shuffled", ephemeral=True)
+    shuffling_nicknames = False
 
 
 @Emilia.slash_command(name="reset_nicknames", description="Reset all nicknames in the server", guild_ids=[1033496612355461131, 790997924896833596])
 async def reset_nicknames(interaction: Interaction) -> None:
+    if shuffling_nicknames:
+        interaction.response.send_message("Wait until end of shuffle...", ephemeral=True)
+        return
     # reset all nicknames from guilds/guild.id/nicknames.json
     try:
         with open(f"guilds/{interaction.guild.id}/nicknames.json", "r") as file:
