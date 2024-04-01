@@ -377,4 +377,21 @@ async def spy(interaction: Interaction, user: Member) -> None:
                     return
 
 
+@Emilia.slash_command(name="dump_nicknames", description="Dump all {member.id: nickname} pairs to .json and send it to the channel")
+async def dump_nicknames(interaction: Interaction) -> None:
+    nicknames = {member.id: member.nick for member in interaction.guild.members}
+    for key, value in nicknames.items():
+        if value is None:
+            nicknames[key] = interaction.guild.get_member(key).name
+    try:
+        with open(f"guilds/{interaction.guild.id}/nicknames.json", "w") as file:
+            json.dump(nicknames, file, indent=4)
+    except FileNotFoundError:
+        os.mkdir(f"guilds/{interaction.guild.id}")
+        with open(f"guilds/{interaction.guild.id}/nicknames.json", "w") as file:
+            json.dump(nicknames, file, indent=4)
+    await interaction.channel.send(file=nextcord.File(f"guilds/{interaction.guild.id}/nicknames.json"))
+    await interaction.response.send_message("Nicknames dumped", ephemeral=True)
+
+
 Emilia.run(open("token.txt").read())
