@@ -4,6 +4,7 @@ import os
 from asyncio import create_task, Task, wait, FIRST_COMPLETED
 from datetime import datetime
 from types import NoneType
+import random
 
 import nextcord
 from nextcord.ext.commands import Bot, Context, command, has_permissions
@@ -380,9 +381,13 @@ async def spy(interaction: Interaction, user: Member) -> None:
 @Emilia.slash_command(name="dump_nicknames", description="Dump all {member.id: nickname} pairs to .json and send it to the channel")
 async def dump_nicknames(interaction: Interaction) -> None:
     nicknames = {member.id: member.nick for member in interaction.guild.members}
+    print(f"{nicknames=}")
     for key, value in nicknames.items():
         if value is None:
+            nicknames[key] = interaction.guild.get_member(key).global_name
+        if nicknames[key] is None:
             nicknames[key] = interaction.guild.get_member(key).name
+    print(f"{nicknames=}")
     try:
         with open(f"guilds/{interaction.guild.id}/nicknames.json", "w") as file:
             json.dump(nicknames, file, indent=4)
@@ -392,6 +397,49 @@ async def dump_nicknames(interaction: Interaction) -> None:
             json.dump(nicknames, file, indent=4)
     await interaction.channel.send(file=nextcord.File(f"guilds/{interaction.guild.id}/nicknames.json"))
     await interaction.response.send_message("Nicknames dumped", ephemeral=True)
+
+
+@Emilia.slash_command(name="shuffle_nicknames", description="Shuffle all nicknames in the server")
+@has_permissions(administrator=True)
+async def shuffle_nicknames(interaction: Interaction) -> None:
+    nicknames = {member.id: member.nick for member in interaction.guild.members}
+    for key, value in nicknames.items():
+        if value is None:
+            nicknames[key] = interaction.guild.get_member(key).name
+    print(f"{nicknames=}")
+    nicknames_ = list(nicknames.values())
+    print(f"{nicknames_=}")
+    random.shuffle(nicknames_)
+    nicknames = list(zip(nicknames.keys(), nicknames_))
+    print(f"{nicknames=}")
+    for key, value in nicknames:
+        try:
+            await interaction.guild.get_member(key).edit(nick=value)
+            print(f"Shuffled nickname for {interaction.guild.get_member(key).name} to {value}")
+        except BaseException as e:
+            print(f"{e=}")
+            print(f"Error shuffling nickname for {interaction.guild.get_member(key).name}")
+    await interaction.channel.send(embed=Embed(title="Nicknames", description="Nicknames shuffled", color=Color.red()))
+    await interaction.response.send_message("Nicknames shuffled", ephemeral=True)
+
+
+@Emilia.slash_command(name="reset_nicknames", description="Reset all nicknames in the server")
+@has_permissions(administrator=True)
+async def reset_nicknames(interaction: Interaction) -> None:
+    # reset all nicknames from guilds/guild.id/nicknames.json
+    try:
+        with open(f"guilds/{interaction.guild.id}/nicknames.json", "r") as file:
+            nicknames = json.load(file)
+    except FileNotFoundError:
+        await interaction.response.send_message("No nicknames found", ephemeral=True)
+        return
+    for member in interaction.guild.members:
+        try:
+            await member.edit(nick=nicknames.pop(str(member.id)))
+            print(f"Reset nickname for {member.name}")
+        except:
+            print(f"Error resetting nickname for {member.name}")
+    await interaction.response.send_message("Nicknames reset", ephemeral=True)
 
 
 Emilia.run(open("token.txt").read())
