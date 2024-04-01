@@ -402,8 +402,9 @@ shuffling_nicknames = False
 
 @Emilia.slash_command(name="shuffle_nicknames", description="Shuffle all nicknames in the server", guild_ids=[1033496612355461131, 790997924896833596])
 async def shuffle_nicknames(interaction: Interaction) -> None:
+    global shuffling_nicknames
     if shuffling_nicknames:
-        interaction.response.send_message("Already shuffling...", ephemeral=True)
+        await interaction.response.send_message("Already shuffling...", ephemeral=True)
         return
 
     shuffling_nicknames = True
@@ -432,8 +433,9 @@ async def shuffle_nicknames(interaction: Interaction) -> None:
 
 @Emilia.slash_command(name="reset_nicknames", description="Reset all nicknames in the server", guild_ids=[1033496612355461131, 790997924896833596])
 async def reset_nicknames(interaction: Interaction) -> None:
+    global shuffling_nicknames
     if shuffling_nicknames:
-        interaction.response.send_message("Wait until end of shuffle...", ephemeral=True)
+        await interaction.response.send_message("Wait until end of shuffle...", ephemeral=True)
         return
     # reset all nicknames from guilds/guild.id/nicknames.json
     try:
