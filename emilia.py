@@ -378,7 +378,7 @@ async def spy(interaction: Interaction, user: Member) -> None:
                     return
 
 
-@Emilia.slash_command(name="dump_nicknames", description="Dump all {member.id: nickname} pairs to .json and send it to the channel")
+@Emilia.slash_command(name="dump_nicknames", description="Dump all {member.id: nickname} pairs to .json and send it to the channel", guild_ids=[1033496612355461131, 790997924896833596])
 async def dump_nicknames(interaction: Interaction) -> None:
     nicknames = {member.id: member.nick for member in interaction.guild.members}
     print(f"{nicknames=}")
@@ -399,8 +399,7 @@ async def dump_nicknames(interaction: Interaction) -> None:
     await interaction.response.send_message("Nicknames dumped", ephemeral=True)
 
 
-@Emilia.slash_command(name="shuffle_nicknames", description="Shuffle all nicknames in the server")
-@has_permissions(administrator=True)
+@Emilia.slash_command(name="shuffle_nicknames", description="Shuffle all nicknames in the server", guild_ids=[1033496612355461131, 790997924896833596])
 async def shuffle_nicknames(interaction: Interaction) -> None:
     nicknames = {member.id: member.nick for member in interaction.guild.members}
     for key, value in nicknames.items():
@@ -423,8 +422,7 @@ async def shuffle_nicknames(interaction: Interaction) -> None:
     await interaction.response.send_message("Nicknames shuffled", ephemeral=True)
 
 
-@Emilia.slash_command(name="reset_nicknames", description="Reset all nicknames in the server")
-@has_permissions(administrator=True)
+@Emilia.slash_command(name="reset_nicknames", description="Reset all nicknames in the server", guild_ids=[1033496612355461131, 790997924896833596])
 async def reset_nicknames(interaction: Interaction) -> None:
     # reset all nicknames from guilds/guild.id/nicknames.json
     try:
