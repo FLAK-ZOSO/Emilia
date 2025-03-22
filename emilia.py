@@ -75,6 +75,9 @@ async def on_message(message: Message) -> None:
         return
     if (stop_spying_string in message.content):
         return
+    if message.guild.id not in censor_data.keys():
+        await Emilia.process_commands(message)
+        return
     for word, instructions in censor_data[message.guild.id].items():
         if (isinstance(word, int) or word.isdigit()): # Must be a censor_data[guild.id][str(user.id)]
             if (word != str(author.id)):
